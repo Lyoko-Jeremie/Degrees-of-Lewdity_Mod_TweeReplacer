@@ -101,7 +101,7 @@ export class TweeReplacer implements AddonPluginHookPointEx {
                 replaceString = rf;
             }
             if (p.findString) {
-                if (pp.content.search(p.findString) < 0) {
+                if (pp.content.indexOf(p.findString) < 0) {
                     console.error('TweeReplacer do_patch() (pp.content.search(p.findString) < 0).', [ri.mod, p]);
                     this.log.error(`TweeReplacer do_patch() cannot find findString: ${ri.mod.name} findString:${p.findString} in:${pp.name}`);
                     continue;
