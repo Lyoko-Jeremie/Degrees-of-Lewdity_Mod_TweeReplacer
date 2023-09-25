@@ -51,6 +51,7 @@ export class TweeReplacer implements AddonPluginHookPointEx {
                 this.log.error(`TweeReplacer: ${name} ${e?.message ? e.message : e}`);
             }
         }
+        sc.passageDataItems.back2Array();
         this.gModUtils.replaceFollowSC2DataInfo(sc, scOld);
     }
 
@@ -92,7 +93,8 @@ export class TweeReplacer implements AddonPluginHookPointEx {
             }
             let replaceString = p.replace;
             if (!replaceString) {
-                const rf = await ri.modZip.zip.file(p.replaceFile!)?.async('string');
+                const f = ri.modZip.zip.file(p.replaceFile!);
+                const rf = await f?.async('string');
                 if (!rf) {
                     console.error('TweeReplacer do_patch() (!rf).', [ri.mod, p]);
                     this.log.error(`TweeReplacer do_patch() cannot find replaceFile: ${ri.mod.name} ${p.replaceFile}`);
