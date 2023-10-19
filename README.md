@@ -24,6 +24,8 @@ this mod export addon:
           // replace content, string/filePathInZip
           "replace": "",
           "replaceFile": "",
+          //When setting debug to true, the replacement operation corresponding to this parameter will be output to the Console.
+          "debug": true
         },
       ]
     }
