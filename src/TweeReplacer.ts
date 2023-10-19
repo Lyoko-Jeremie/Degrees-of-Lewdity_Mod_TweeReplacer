@@ -18,6 +18,7 @@ export interface ReplaceParams {
     findRegex?: string;
     replace?: string;
     replaceFile?: string;
+    debug?: boolean;
 }
 
 export class TweeReplacer implements AddonPluginHookPointEx {
@@ -80,11 +81,18 @@ export class TweeReplacer implements AddonPluginHookPointEx {
             return;
         }
         for (const p of params) {
+            let debugFlag: boolean = false;
+
             if (!this.checkParams(p)) {
                 console.error('TweeReplacer do_patch() (!this.checkParams(p)).', [ri.mod, p]);
                 this.log.error(`TweeReplacer do_patch() invalid params p: ${ri.mod.name} ${JSON.stringify(p)}`);
                 continue;
             }
+
+            let paramDebug = p.debug;
+            if (paramDebug !== undefined)
+                debugFlag = paramDebug;
+
             const pp = sc.passageDataItems.map.get(p.passage);
             if (!pp) {
                 console.error('TweeReplacer do_patch() (!pp).', [ri.mod, p]);
@@ -108,14 +116,20 @@ export class TweeReplacer implements AddonPluginHookPointEx {
                     this.log.error(`TweeReplacer do_patch() cannot find findString: ${ri.mod.name} findString:${p.findString} in:${pp.name}`);
                     continue;
                 }
+                console.log(`Debug "${p.findString}":`);
+                console.log(`Before: ${pp.content}`);
                 pp.content = pp.content.replace(p.findString, replaceString);
+                console.log(`After: ${pp.content}`);
             } else if (p.findRegex) {
                 if (pp.content.search(new RegExp(p.findRegex)) < 0) {
                     console.error('TweeReplacer do_patch() (pp.content.search(p.findRegex) < 0).', [ri.mod, p]);
                     this.log.error(`TweeReplacer do_patch() cannot find findRegex: ${ri.mod.name} findRegex:${p.findRegex} in:${pp.name}`);
                     continue;
                 }
+                console.log(`Debug ${p.findRegex}:`);
+                console.log(`Before: ${pp.content}`);
                 pp.content = pp.content.replace(new RegExp(p.findRegex), replaceString);
+                console.log(`After: ${pp.content}`);
             } else {
                 console.error('TweeReplacer do_patch() (!p.findString && !p.findRegex).', [ri.mod, p]);
                 this.log.error(`TweeReplacer do_patch() invalid findString and findRegex: ${ri.mod.name} ${p.findString} ${p.findRegex}`);
