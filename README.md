@@ -32,10 +32,6 @@ this mod export addon:
   ],
   "dependenceInfo": [
     {
-      "modName": "ModLoader",
-      "version": "^1.2.2"
-    },
-    {
       "modName": "TweeReplacer",
       "version": "^1.0.0"
     }
