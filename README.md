@@ -13,7 +13,7 @@ this mod export addon:
     {
       "modName": "TweeReplacer",
       "addonName": "TweeReplacerAddon",
-      "modVersion": "1.0.0",
+      "modVersion": "^1.2.0",
       "params": [
         {
           // which passage to replace
@@ -24,8 +24,10 @@ this mod export addon:
           // replace content, string/filePathInZip
           "replace": "",
           "replaceFile": "",
-          //When setting debug to true, the replacement operation corresponding to this parameter will be output to the Console.
-          "debug": true
+          // When setting debug to true, the replacement operation corresponding to this parameter will be output to the Console.
+          "debug": true,
+          // if you want to replace all, set this to true, otherwise only replace the first one.
+          "all": true
         },
       ]
     }
@@ -33,7 +35,7 @@ this mod export addon:
   "dependenceInfo": [
     {
       "modName": "TweeReplacer",
-      "version": "^1.0.0"
+      "version": "^1.2.0"
     }
   ]
 }
