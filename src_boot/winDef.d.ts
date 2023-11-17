@@ -8,5 +8,7 @@ declare global {
         modSC2DataManager: SC2DataManager;
 
         jQuery: jQuery;
+
+        addonTweeReplacer: TweeReplacer;
     }
 }

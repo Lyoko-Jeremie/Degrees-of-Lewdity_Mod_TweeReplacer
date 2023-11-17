@@ -1,6 +1,6 @@
 {
   "name": "TweeReplacer",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "styleFileList": [
   ],
   "scriptFileList_earlyload": [
@@ -21,10 +21,31 @@
   "additionFile": [
     "README.md"
   ],
+  "addonPlugin": [
+//    {
+//      "modName": "TweeReplacerLinker",
+//      "addonName": "TweeReplacerLinkerAddon",
+//      "modVersion": "^1.0.0",
+//      "params": {}
+//    },
+    {
+      "modName": "ConflictChecker",
+      "addonName": "ConflictCheckerAddon",
+      "modVersion": "^1.0.0",
+      "params": {
+        "optionalAfter": [
+          {
+            "modName": "TweeReplacerLinker",
+            "version": "^1.0.0"
+          }
+        ]
+      }
+    }
+  ],
   "dependenceInfo": [
     {
       "modName": "ModLoader",
-      "version": "^1.6.2||^2.0.0"
+      "version": "^2.6.3"
     }
   ]
 }
