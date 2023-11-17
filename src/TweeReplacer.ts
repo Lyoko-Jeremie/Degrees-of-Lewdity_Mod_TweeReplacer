@@ -65,6 +65,8 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
     isLinkerMode = false;
 
     async enableLinkerMode(): Promise<boolean> {
+        console.log(`[TweeReplacer] now enableLinkerMode`);
+        this.logger.log(`[TweeReplacer] now enableLinkerMode`);
         this.isLinkerMode = true;
         return true;
     }
