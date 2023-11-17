@@ -22,12 +22,6 @@
     "README.md"
   ],
   "addonPlugin": [
-//    {
-//      "modName": "TweeReplacerLinker",
-//      "addonName": "TweeReplacerLinkerAddon",
-//      "modVersion": "^1.0.0",
-//      "params": {}
-//    },
     {
       "modName": "ConflictChecker",
       "addonName": "ConflictCheckerAddon",
