@@ -204,11 +204,14 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
                 }
             }
         }
+        let okCount = 0;
+        let errorCount = 0;
         for (const p of params) {
 
             if (!isReplaceParams(p)) {
                 console.error('[TweeReplacer] do_patch() (!this.checkParams(p)).', [ri.mod, p]);
                 this.logger.error(`[TweeReplacer] do_patch() invalid params p: [${ri.mod.name}] [${JSON.stringify(p)}]`);
+                ++errorCount;
                 continue;
             }
 
@@ -221,6 +224,7 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
             if (!pp) {
                 console.error('[TweeReplacer] do_patch() (!pp).', [ri.mod, p]);
                 this.logger.error(`[TweeReplacer] do_patch() cannot find passage: [${ri.mod.name}] [${p.passage}]`);
+                ++errorCount;
                 continue;
             }
             let replaceString = p.replace;
@@ -230,6 +234,7 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
                 if (!rf) {
                     console.error('[TweeReplacer] do_patch() (!rf).', [ri.mod, p]);
                     this.logger.error(`[TweeReplacer] do_patch() cannot find replaceFile: [${ri.mod.name}] [${p.replaceFile}]`);
+                    ++errorCount;
                     continue;
                 }
                 replaceString = rf;
@@ -238,6 +243,7 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
                 if (pp.content.indexOf(p.findString) < 0) {
                     console.error('[TweeReplacer] do_patch() (pp.content.search(p.findString) < 0).', [ri.mod, p]);
                     this.logger.error(`[TweeReplacer] do_patch() cannot find findString: [${ri.mod.name}] findString:[${p.findString}] in:[${pp.name}]`);
+                    ++errorCount;
                     continue;
                 }
                 if (debugFlag) {
@@ -256,6 +262,7 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
                 if (pp.content.search(new RegExp(p.findRegex)) < 0) {
                     console.error('[TweeReplacer] do_patch() (pp.content.search(p.findRegex) < 0).', [ri.mod, p]);
                     this.logger.error(`[TweeReplacer] do_patch() cannot find findRegex: [${ri.mod.name}] findRegex:[${p.findRegex}] in:[${pp.name}]`);
+                    ++errorCount;
                     continue;
                 }
                 if (debugFlag) {
@@ -273,10 +280,17 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
             } else {
                 console.error('[TweeReplacer] do_patch() (!p.findString && !p.findRegex).', [ri.mod, p]);
                 this.logger.error(`[TweeReplacer] do_patch() invalid findString and findRegex: [${ri.mod.name}] [${p.findString}] [${p.findRegex}]`);
+                ++errorCount;
                 continue;
             }
             console.log('[TweeReplacer] do_patch() done.', [ri.mod, p]);
-            this.logger.log(`[TweeReplacer] do_patch() done: [${ri.mod.name}] [${p.passage}] [${p.findString || ''}]/[${p.findRegex || ''}]`);
+            ++okCount;
+            // this.logger.log(`[TweeReplacer] do_patch() done: [${ri.mod.name}] [${p.passage}] [${p.findString || ''}]/[${p.findRegex || ''}]`);
+        }
+        if (errorCount === 0) {
+            this.logger.log(`[TweeReplacer] do_patch() done: [${ri.mod.name}] okCount:[${okCount}] errorCount:[${errorCount}]`);
+        } else {
+            this.logger.error(`[TweeReplacer] do_patch() done: [${ri.mod.name}] okCount:[${okCount}] errorCount:[${errorCount}]`);
         }
     }
 
