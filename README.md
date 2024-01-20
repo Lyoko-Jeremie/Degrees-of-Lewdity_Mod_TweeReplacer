@@ -46,6 +46,11 @@ this mod export addon:
 
 ```json lines
 {
+  "additionFile": [
+    // don't forgot add `paramsFiles` file to `additionFile` if you use `packModZip` tools
+    "path/to/paramsFileA.json5",
+    "path/to/paramsFileB.json5"
+  ],
   "addonPlugin": [
     {
       "modName": "TweeReplacer",
