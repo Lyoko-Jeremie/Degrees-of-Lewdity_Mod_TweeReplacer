@@ -10,7 +10,8 @@ import type {
     TweeReplacerLinkerClientInterface,
     TweeReplacerLinkerClientCallbackType,
 } from "../../TweeReplacerLinker/dist/TweeReplacerLinkerInterface";
-import {isNil} from "lodash";
+import {every, isArray, isNil, isString} from "lodash";
+import JSON5 from 'json5';
 
 interface ReplaceInfo {
     addonName: string;
@@ -27,6 +28,20 @@ export interface ReplaceParams {
     debug?: boolean;
     // replace all , otherwise only first one
     all?: boolean;
+}
+
+export function isReplaceParams(p: any): p is ReplaceParams {
+    return p
+        && typeof p === 'object'
+        && typeof p.passage === 'string'
+        && (typeof p.findString === 'string' || typeof p.findRegex === 'string')
+        && (typeof p.replace === 'string' || typeof p.replaceFile === 'string')
+        && (isNil(p.debug) || typeof p.debug === 'boolean')
+        ;
+}
+
+export interface ModBootJsonAddonPluginTweeReplacer extends ModBootJsonAddonPlugin {
+    paramsFiles?: string[];
 }
 
 export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerClientInterface {
@@ -142,44 +157,58 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
                 await this.do_patch(ri, sc);
             } catch (e: any | Error) {
                 console.error(e);
-                this.logger.error(`TweeReplacer: ${name} ${e?.message ? e.message : e}`);
+                this.logger.error(`[TweeReplacer]: ${name} ${e?.message ? e.message : e}`);
             }
         }
         sc.passageDataItems.back2Array();
         this.gModUtils.replaceFollowSC2DataInfo(sc, scOld);
     }
 
-    checkParams(p: any): p is ReplaceParams {
-        return p
-            && typeof p === 'object'
-            && typeof p.passage === 'string'
-            && (typeof p.findString === 'string' || typeof p.findRegex === 'string')
-            && (typeof p.replace === 'string' || typeof p.replaceFile === 'string')
-            && (isNil(p.debug) || typeof p.debug === 'boolean')
-            ;
-    }
-
     async do_patch(ri: ReplaceInfo, sc: SC2DataInfo) {
         const ad = ri.mod.bootJson.addonPlugin?.find((T: ModBootJsonAddonPlugin) => {
             return T.modName === 'TweeReplacer'
                 && T.addonName === 'TweeReplacerAddon';
-        });
+        }) as ModBootJsonAddonPluginTweeReplacer | undefined;
         if (!ad) {
             // never go there
-            console.error('TweeReplacer do_patch() (!ad).', [ri.mod]);
+            console.error('[TweeReplacer] do_patch() (!ad).', [ri.mod]);
             return;
         }
-        const params = ad.params;
-        if (!params || !Array.isArray(params)) {
-            console.error('TweeReplacer do_patch() (!params).', [ri.mod]);
-            this.logger.error(`TweeReplacer do_patch() invalid params: ${ri.mod.name}`);
+        let params = ad.params as ReplaceParams[];
+        if (!isArray(params) || !every<ReplaceParams>(params, isReplaceParams)) {
+            console.error('[TweeReplacer] do_patch() (!params).', [ri.mod]);
+            this.logger.error(`[TweeReplacer] do_patch() invalid params: ${ri.mod.name}`);
             return;
+        }
+        if (ad.paramsFiles && isArray(ad.paramsFiles) && every(ad.paramsFiles, isString)) {
+            for (const f of ad.paramsFiles) {
+                const ff = ri.modZip.zip.file(f);
+                const rf = await ff?.async('string');
+                if (!rf) {
+                    console.error('[TweeReplacer] do_patch() (!rf).', [ri.mod, f, rf]);
+                    this.logger.error(`[TweeReplacer] do_patch() cannot find paramsFile: [${ri.mod.name}] [${f}]`);
+                    continue;
+                }
+                try {
+                    const p = JSON5.parse(rf);
+                    if (!isArray(p) || !every<ReplaceParams>(p, isReplaceParams)) {
+                        console.error('[TweeReplacer] do_patch() (!paramsFile).', [ri.mod, f, rf]);
+                        this.logger.error(`[TweeReplacer] do_patch() invalid paramsFile: [${ri.mod.name}] [${f}]. skip`);
+                        continue;
+                    }
+                    params = params.concat(p);
+                } catch (e) {
+                    console.error('[TweeReplacer] do_patch() JSON5.parse(rf) failed.', [ri.mod, f, rf]);
+                    this.logger.error(`[TweeReplacer] do_patch() JSON5.parse(rf) failed: [${ri.mod.name}] [${f}]`);
+                    continue;
+                }
+            }
         }
         for (const p of params) {
 
-            if (!this.checkParams(p)) {
-                console.error('TweeReplacer do_patch() (!this.checkParams(p)).', [ri.mod, p]);
-                this.logger.error(`TweeReplacer do_patch() invalid params p: [${ri.mod.name}] [${JSON.stringify(p)}]`);
+            if (!isReplaceParams(p)) {
+                console.error('[TweeReplacer] do_patch() (!this.checkParams(p)).', [ri.mod, p]);
+                this.logger.error(`[TweeReplacer] do_patch() invalid params p: [${ri.mod.name}] [${JSON.stringify(p)}]`);
                 continue;
             }
 
@@ -190,8 +219,8 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
 
             const pp = sc.passageDataItems.map.get(p.passage);
             if (!pp) {
-                console.error('TweeReplacer do_patch() (!pp).', [ri.mod, p]);
-                this.logger.error(`TweeReplacer do_patch() cannot find passage: [${ri.mod.name}] [${p.passage}]`);
+                console.error('[TweeReplacer] do_patch() (!pp).', [ri.mod, p]);
+                this.logger.error(`[TweeReplacer] do_patch() cannot find passage: [${ri.mod.name}] [${p.passage}]`);
                 continue;
             }
             let replaceString = p.replace;
@@ -199,16 +228,16 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
                 const f = ri.modZip.zip.file(p.replaceFile!);
                 const rf = await f?.async('string');
                 if (!rf) {
-                    console.error('TweeReplacer do_patch() (!rf).', [ri.mod, p]);
-                    this.logger.error(`TweeReplacer do_patch() cannot find replaceFile: [${ri.mod.name}] [${p.replaceFile}]`);
+                    console.error('[TweeReplacer] do_patch() (!rf).', [ri.mod, p]);
+                    this.logger.error(`[TweeReplacer] do_patch() cannot find replaceFile: [${ri.mod.name}] [${p.replaceFile}]`);
                     continue;
                 }
                 replaceString = rf;
             }
             if (p.findString) {
                 if (pp.content.indexOf(p.findString) < 0) {
-                    console.error('TweeReplacer do_patch() (pp.content.search(p.findString) < 0).', [ri.mod, p]);
-                    this.logger.error(`TweeReplacer do_patch() cannot find findString: [${ri.mod.name}] findString:[${p.findString}] in:[${pp.name}]`);
+                    console.error('[TweeReplacer] do_patch() (pp.content.search(p.findString) < 0).', [ri.mod, p]);
+                    this.logger.error(`[TweeReplacer] do_patch() cannot find findString: [${ri.mod.name}] findString:[${p.findString}] in:[${pp.name}]`);
                     continue;
                 }
                 if (debugFlag) {
@@ -225,8 +254,8 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
                 }
             } else if (p.findRegex) {
                 if (pp.content.search(new RegExp(p.findRegex)) < 0) {
-                    console.error('TweeReplacer do_patch() (pp.content.search(p.findRegex) < 0).', [ri.mod, p]);
-                    this.logger.error(`TweeReplacer do_patch() cannot find findRegex: [${ri.mod.name}] findRegex:[${p.findRegex}] in:[${pp.name}]`);
+                    console.error('[TweeReplacer] do_patch() (pp.content.search(p.findRegex) < 0).', [ri.mod, p]);
+                    this.logger.error(`[TweeReplacer] do_patch() cannot find findRegex: [${ri.mod.name}] findRegex:[${p.findRegex}] in:[${pp.name}]`);
                     continue;
                 }
                 if (debugFlag) {
@@ -242,12 +271,12 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
                     console.log(`[TweeReplacer] After:`, pp.content);
                 }
             } else {
-                console.error('TweeReplacer do_patch() (!p.findString && !p.findRegex).', [ri.mod, p]);
-                this.logger.error(`TweeReplacer do_patch() invalid findString and findRegex: [${ri.mod.name}] [${p.findString}] [${p.findRegex}]`);
+                console.error('[TweeReplacer] do_patch() (!p.findString && !p.findRegex).', [ri.mod, p]);
+                this.logger.error(`[TweeReplacer] do_patch() invalid findString and findRegex: [${ri.mod.name}] [${p.findString}] [${p.findRegex}]`);
                 continue;
             }
-            console.log('TweeReplacer do_patch() done.', [ri.mod, p]);
-            this.logger.log(`TweeReplacer do_patch() done: [${ri.mod.name}] [${p.passage}] [${p.findString || ''}]/[${p.findRegex || ''}]`);
+            console.log('[TweeReplacer] do_patch() done.', [ri.mod, p]);
+            this.logger.log(`[TweeReplacer] do_patch() done: [${ri.mod.name}] [${p.passage}] [${p.findString || ''}]/[${p.findRegex || ''}]`);
         }
     }
 
