@@ -260,20 +260,21 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
                     console.log(`[TweeReplacer] After:`, pp.content);
                 }
             } else if (p.findRegex) {
-                if (pp.content.search(new RegExp(p.findRegex)) < 0) {
+                const regexFlag = replaceEvery ? (p.regexFlag ?? 'g') : (p.regexFlag ?? undefined);
+                if (pp.content.search(new RegExp(p.findRegex, regexFlag)) < 0) {
                     console.error('[TweeReplacer] do_patch() (pp.content.search(p.findRegex) < 0).', [ri.mod, p]);
-                    this.logger.error(`[TweeReplacer] do_patch() cannot find findRegex: [${ri.mod.name}] findRegex:[${p.findRegex}] in:[${pp.name}]`);
+                    this.logger.error(`[TweeReplacer] do_patch() cannot find findRegex: [${ri.mod.name}] findRegex:[${p.findRegex}] regexFlag:[${regexFlag}] in:[${pp.name}]`);
                     ++errorCount;
                     continue;
                 }
                 if (debugFlag) {
-                    console.log(`[TweeReplacer] findRegex :`, [p.findRegex, p.regexFlag]);
+                    console.log(`[TweeReplacer] findRegex :`, [p.findRegex, p.regexFlag, regexFlag]);
                     console.log(`[TweeReplacer] Before:`, pp.content);
                 }
                 if (replaceEvery) {
-                    pp.content = pp.content.replaceAll(new RegExp(p.findRegex, p.regexFlag ?? 'g'), replaceString);
+                    pp.content = pp.content.replaceAll(new RegExp(p.findRegex, regexFlag), replaceString);
                 } else {
-                    pp.content = pp.content.replace(new RegExp(p.findRegex, p.regexFlag ?? undefined), replaceString);
+                    pp.content = pp.content.replace(new RegExp(p.findRegex, regexFlag), replaceString);
                 }
                 if (debugFlag) {
                     console.log(`[TweeReplacer] After:`, pp.content);
