@@ -20,6 +20,9 @@ this mod export addon:
           // find string, string/regex
           "findString": "",
           "findRegex": "",
+          // the flag of regex, optional, default is empty when `all=false`, otherwise, when `all=true` is `g`
+          // if set it by yourself, make sure it is a valid regex flag , and not forget the `g` flag when `all=true`
+          "regexFlag": "",
           // replace content, string/filePathInZip
           "replace": "",
           "replaceFile": "",
@@ -70,6 +73,9 @@ this mod export addon:
           // find string, string/regex
           "findString": "",
           "findRegex": "",
+          // the flag of regex, optional, default is empty when `all=false`, otherwise, when `all=true` is `g`
+          // if set it by yourself, make sure it is a valid regex flag , and not forget the `g` flag when `all=true`
+          "regexFlag": "",
           // replace content, string/filePathInZip
           "replace": "",
           "replaceFile": "",
@@ -102,6 +108,9 @@ the `paramsFiles` file:
      // find string, string/regex
      "findString": "",
      "findRegex": "",
+     // the flag of regex, optional, default is empty when `all=false`, otherwise, when `all=true` is `g`
+     // if set it by yourself, make sure it is a valid regex flag , and not forget the `g` flag when `all=true`
+     "regexFlag": "",
      // replace content, string/filePathInZip
      "replace": "",
      "replaceFile": "",

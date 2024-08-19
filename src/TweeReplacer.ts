@@ -23,6 +23,7 @@ export interface ReplaceParams {
     passage: string;
     findString?: string;
     findRegex?: string;
+    regexFlag?: string;
     replace?: string;
     replaceFile?: string;
     debug?: boolean;
@@ -266,13 +267,13 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
                     continue;
                 }
                 if (debugFlag) {
-                    console.log(`[TweeReplacer] findRegex :`, p.findRegex);
+                    console.log(`[TweeReplacer] findRegex :`, [p.findRegex, p.regexFlag]);
                     console.log(`[TweeReplacer] Before:`, pp.content);
                 }
                 if (replaceEvery) {
-                    pp.content = pp.content.replaceAll(new RegExp(p.findRegex), replaceString);
+                    pp.content = pp.content.replaceAll(new RegExp(p.findRegex, p.regexFlag ?? 'g'), replaceString);
                 } else {
-                    pp.content = pp.content.replace(new RegExp(p.findRegex), replaceString);
+                    pp.content = pp.content.replace(new RegExp(p.findRegex, p.regexFlag ?? undefined), replaceString);
                 }
                 if (debugFlag) {
                     console.log(`[TweeReplacer] After:`, pp.content);
