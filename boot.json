@@ -1,6 +1,6 @@
 {
   "name": "TweeReplacer",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "styleFileList": [
   ],
   "scriptFileList_earlyload": [
@@ -39,7 +39,7 @@
   "dependenceInfo": [
     {
       "modName": "ModLoader",
-      "version": "^2.6.3"
+      "version": "^2.60.1"
     }
   ]
 }
