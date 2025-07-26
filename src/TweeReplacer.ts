@@ -4,6 +4,7 @@ import type {ModBootJsonAddonPlugin, ModInfo} from "../../../dist-BeforeSC2/ModL
 import type {ModZipReader} from "../../../dist-BeforeSC2/ModZipReader";
 import type {SC2DataInfo} from "../../../dist-BeforeSC2/SC2DataInfoCache";
 import type {SC2DataManager} from "../../../dist-BeforeSC2/SC2DataManager";
+import type {JSZipLikeReadOnlyInterface} from "../../../dist-BeforeSC2/JSZipLikeReadOnlyInterface";
 import type {ModUtils} from "../../../dist-BeforeSC2/Utils";
 import type {
     TweeReplacerLinkerInterface,
@@ -230,7 +231,7 @@ export class TweeReplacer implements AddonPluginHookPointEx, TweeReplacerLinkerC
             }
             let replaceString = p.replace;
             if (!replaceString) {
-                const f = ri.modZip.zip.file(p.replaceFile!);
+                const f = (ri.modZip.zip as JSZipLikeReadOnlyInterface).file(p.replaceFile!);
                 const rf = await f?.async('string');
                 if (!rf) {
                     console.error('[TweeReplacer] do_patch() (!rf).', [ri.mod, p]);
